@@ -1,79 +1,63 @@
-const prompt = require("prompt-sync")();
 const help = require("./help");
 const SecretKey = require("./secret-key.js");
 const SecureMsg = require("./HMAC.js");
-const rules = require("./gamerule");
+
 const readInput = require("./readInput");
+const rpsGame = require("./game-mechanics.js");
 
-function gameSequence(moves) {
+
+const rpsGame = new rpsGame();
+const secret = new SecretKey();
+const securemsg = new SecureMsg();
+
+rpsGame.setMoves();
+rpsGame.setRulesTable();
+
+gameSequence();
+
+function gameSequence() {
   
-  console.log("Game start!");
+  console.log('Game start!');
 
-  // Computer makes its move
-  let movesNumber = moves.length;
+  rpsGame.setComputerMove();
+  rpsGame.secretKey = secret.create();
+  rpsGame.hmac = securemsg.createHMAC(rpsGame.secretKey, rpsGame.computerMove);
 
-  let computerMove = getRandomIntInclusive(0, movesNumber - 1);
-  console.log("\nDEBUGGING; Computer move:", computerMove);
+  console.log('HMAC: ', rpsGame.hmac);
 
-  const secretKey = new SecretKey();
-  let moveKey = secretKey.create();
-  console.log("DEBUGGING; Secret key: ", moveKey);
+  rpsGame.menu();
 
-  const msg = new SecureMsg();
-  msg.createHMAC(moveKey, computerMove.toString());
-
-  let moveHMAC = msg.hmac;
-  console.log("HMAC: ", moveHMAC);
-
-  //Show menu
-  console.log("\nAvailable moves: ");
-
-  for (const [key, value] of options.entries()) {
-    console.log(key, "-", value);
-  }
-
-  // Player makes their move
-
-  const playerMove = prompt("\nEnter your move: ");
-  switch (playerMove) {
-    case "?": {
-      console.log(help.getTable(moves).toString());
-      //TODO: вернуться в главное меню!
-    }
-    case "0": {
-      process.exit();
-    }
-  }
-
-  //Showing the game result
-  let gamestatus = rules.getResult(movesNumber, computerMove, playerMove - 1);
-  console.log("Computer move:", moves[computerMove]);
-  console.log(gamestatus);
-
-  //Play again?
-
+  interface();
 }
 
-function gameInterface(moves) {
+function interface() {
   const ans = await readInput('Choose your move: ');
 
-  if ((ans >= 0) && (ans < moves.length || ans == '?')) {
+  // Processing user input
+  if ((ans >= 0) && (ans < rpsGame.moves.length || ans == '?')) {
     switch (ans) {
       case '?':
-                console.log(help.getTable(moves).toString());
-                gameInterface(moves);
+                console.log(help.getTable(rpsGame).toString());
+                interface();
                 break;
       case '0':
                 process.exit();
         
       default: {
-        //ВОТ СЮДА ОБРАБОТКУ ПРАВИЛ И ВЫВОД РЕЗУЛЬТАТА
+        
+        console.log('Your move: ', rpsGame.moves[ans - 1]);
+        console.log('Computer move: ', rpsGame.moves[rpsGame.computerMove]);
+        // Game mechanics: defining the winner
+        console.log(rpsGame.getResult((ans - 1), computerMove));
+        // Showing the secret key
+        console.log('Secret key of the move:', rpsGame.secretKey);
+        
+        // Option to play again
+        const playagain = await readInput('Do you wat to play again? (yes/no): ');
 
-        const playagain = await readInput('Do you wat to play again? (y/n): ');
-
-        if (playagain == 'y') {
-          // gameSequence(moves);
-        } else if (playagain == 'n') {
+        if (playagain == 'yes') {
+          gameSequence();
+        } else if (playagain == 'no') {
           break;
         }
       }
@@ -82,63 +66,8 @@ function gameInterface(moves) {
   }
   else {
     console.log("Incorrect command. Please, try again")
-    gameInterface(moves);
+    interface();
   }
 }
-
-function getRandomIntInclusive(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-let moves = process.argv.slice(2);
-
-let options = new Map();
-moves.forEach((move, index) => {
-  options.set(index + 1, move);
-});
-options.set(0, "exit");
-options.set("?", "help");
-
-// Computer decides on its move
-let movesNumber = moves.length;
-
-let computerMove = getRandomIntInclusive(0, movesNumber-1);
-console.log("\nDEBUGGING; Computer move:", computerMove);
-
-const secretKey = new SecretKey();
-let moveKey = secretKey.create();
-console.log("DEBUGGING; Secret key: ", moveKey);
-
-const msg = new SecureMsg();
-msg.createHMAC(moveKey, computerMove.toString());
-
-let moveHMAC = msg.hmac;
-console.log("HMAC: ", moveHMAC);
-
-// Player chsoses their move
-
-console.log("\nAvailable moves: ");
-
-for (const [key, value] of options.entries()) {
-  console.log(key, "-", value);
-}
-
-const playerMove = prompt("\nEnter your move: ");
-switch (playerMove) {
-  case "?": {
-    console.log(help.getTable(moves).toString());
-    //TODO: вернуться в главное меню!
-  }
-  case "0": {
-    process.exit();
-  }
-}
-
-//Showing the game result
-let gamestatus = rules.getResult(movesNumber, computerMove, playerMove - 1);
-console.log("Computer move:", moves[computerMove])
-console.log(gamestatus);
 
 
