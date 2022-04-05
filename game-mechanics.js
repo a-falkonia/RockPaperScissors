@@ -15,7 +15,7 @@ class rpsGame {
   menu() {
     console.log("\nAvailable moves: ");
 
-    this.moves.forEach(element, (ind) => {
+    this.moves.forEach((element, ind) => {
       console.log(`${ind + 1} - ${element}`);
     });
     console.log("0 - exit");
@@ -30,7 +30,7 @@ class rpsGame {
   }
 
   setComputerMove() {
-    let computerMove = getRandomIntInclusive(0, movesNumber - 1);
+    let computerMove = getRandomIntInclusive(0, this.moves.length - 1);
     this.computerMove = computerMove;
   }
 
@@ -41,13 +41,13 @@ class rpsGame {
       return "Draw";
     } else if (computerMove > yourMove) {
       if (computerMove - yourMove < len / 2) {
-        return "You Lose";
+        return "Lose";
       }
-      return "You Win!";
+      return "Win";
     } else if (yourMove - computerMove < len / 2) {
-      return "You Win!";
+      return "Win";
     }
-    return "You Lose";
+    return "Lose";
   }
 
   isValid(moveset) {
@@ -62,7 +62,7 @@ class rpsGame {
 
     if (
       moveset.some((move, ind, movearr) => {
-        if (ind != movearr.length) return movearr.includes(move, index + 1);
+        if (ind != movearr.length) return movearr.includes(move, ind + 1);
       })
     ) {
       console.log("Moves must be unique. Please, try again");
@@ -81,14 +81,10 @@ class rpsGame {
 
             // Win / Lose / Draw with other moves
             for (let j = 0; j < this.moves.length; j++){
-                switch (this.getResult(i, j)) {
-                    case 'Draw': row.push('Draw');
-                    case 'You Lose': row.push('Lose');
-                    case 'You Win': row.push('Win');
-                }
+              row.push(this.getResult(i, j));
             }
-
-            table.push(row);
+          console.log(row);
+          table.push(row);
         }
         this.rulesTable = table;
     }

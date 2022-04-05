@@ -6,38 +6,40 @@ const readInput = require("./readInput");
 const rpsGame = require("./game-mechanics.js");
 
 
-const rpsGame = new rpsGame();
+const rps = new rpsGame();
 const secret = new SecretKey();
 const securemsg = new SecureMsg();
 
-rpsGame.setMoves();
-rpsGame.setRulesTable();
+rps.setMoves();
+rps.setRulesTable();
 
 gameSequence();
 
 function gameSequence() {
   
-  console.log('Game start!');
+  console.log('\nGame start!');
 
-  rpsGame.setComputerMove();
-  rpsGame.secretKey = secret.create();
-  rpsGame.hmac = securemsg.createHMAC(rpsGame.secretKey, rpsGame.computerMove);
+  rps.setComputerMove();
+  rps.secretKey = secret.create();
+  securemsg.createHMAC(rps.secretKey, rps.computerMove.toString());
 
-  console.log('HMAC: ', rpsGame.hmac);
+  rps.hmac = securemsg.hmac;
+  
+  console.log('HMAC: ', rps.hmac);
 
-  rpsGame.menu();
+  rps.menu();
 
   interface();
 }
 
-function interface() {
+async function interface() {
   const ans = await readInput('Choose your move: ');
 
   // Processing user input
-  if ((ans >= 0) && (ans < rpsGame.moves.length || ans == '?')) {
+  if (((ans >= 0) && (ans < rps.moves.length)) || ans == '?') {
     switch (ans) {
       case '?':
-                console.log(help.getTable(rpsGame).toString());
+                console.log(help.getTable(rps).toString());
                 interface();
                 break;
       case '0':
@@ -45,18 +47,21 @@ function interface() {
         
       default: {
         
-        console.log('Your move: ', rpsGame.moves[ans - 1]);
-        console.log('Computer move: ', rpsGame.moves[rpsGame.computerMove]);
-        // Game mechanics: defining the winner
-        console.log(rpsGame.getResult((ans - 1), computerMove));
+        console.log('Your move: ', rps.moves[ans - 1]);
+        console.log('Computer move: ', rps.moves[rps.computerMove]);
+
+        // Game mechanics: anouncing the winner
+
+        console.log("You", rps.getResult((ans - 1), rps.computerMove));
         // Showing the secret key
-        console.log('Secret key of the move:', rpsGame.secretKey);
+        console.log('Secret key of the move:', rps.secretKey);
         
         // Option to play again
         const playagain = await readInput('Do you wat to play again? (yes/no): ');
 
         if (playagain == 'yes') {
           gameSequence();
+          break;
         } else if (playagain == 'no') {
           break;
         }
@@ -64,6 +69,7 @@ function interface() {
     }
     
   }
+  
   else {
     console.log("Incorrect command. Please, try again")
     interface();

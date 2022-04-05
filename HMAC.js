@@ -5,7 +5,7 @@ class SecureMsg {
   createHMAC(key, message) {
     const hmac = createHmac("sha256", key);
     hmac.update(message);
-    this.hmac = hmac.digest("hex");
+    this.hmac = hmac.digest('hex');
   }
 }
 
