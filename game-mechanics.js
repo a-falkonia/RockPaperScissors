@@ -83,7 +83,6 @@ class rpsGame {
             for (let j = 0; j < this.moves.length; j++){
               row.push(this.getResult(i, j));
             }
-          console.log(row);
           table.push(row);
         }
         this.rulesTable = table;
