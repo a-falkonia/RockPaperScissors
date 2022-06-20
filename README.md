@@ -1,5 +1,4 @@
 ## RockPaperScissors
-https://youtu.be/7EJvEbjYesA
 
 ## Project Description
 Обобщенная игра в камень-ножницы-бумага с задаваемым числом ходов.
